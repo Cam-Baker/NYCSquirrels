@@ -1,0 +1,43 @@
+---
+title: "Central Park Squirrels"
+output: html_document
+---
+
+```{r}
+
+# Reading in the data
+squirrel_data <- read.csv("../../Downloads/2018_Central_Park_Squirrel_Census_-_Squirrel_Data.csv", stringsAsFactors = F)
+
+convertField <- function(data, field){
+  data[which(grepl('false',squirrel_data[,field])),field] = 0
+  data[which(grepl('true',squirrel_data[,field])),field] = 1
+  data[,field] <- as.numeric(data[,field])
+  return(data)
+}
+# Converting fields of interest to 1 and 0
+squirrel_data <- convertField(squirrel_data,"Kuks")
+squirrel_data <- convertField(squirrel_data,"Quaas")
+squirrel_data <- convertField(squirrel_data,"Moans")
+squirrel_data <- convertField(squirrel_data,"Tail.flags")
+squirrel_data <- convertField(squirrel_data,"Tail.twitches")
+squirrel_data <- convertField(squirrel_data,"Approaches")
+squirrel_data <- convertField(squirrel_data,"Indifferent")
+squirrel_data <- convertField(squirrel_data,"Runs.from")
+
+```
+
+```{r}
+
+library(PerformanceAnalytics)
+
+squirrel_data_cor <- squirrel_data[,c("Kuks","Quaas","Moans","Tail.flags","Tail.twitches","Approaches","Indifferent","Runs.from")]
+chart.Correlation(squirrel_data_cor, histogram = T)
+
+```
+
+```{r}
+squirrel_data_cor$Scared <- rowSums(squirrel_data_cor[,c("Kuks","Quaas","Moans","Tail.flags","Runs.from")])
+squirrel_data_cor$Curious <- rowSums(squirrel_data_cor[,c("Tail.twitches","Approaches")]) + abs(squirrel_data$Indifferent - 1)
+squirrel_data_cor$Brave <- rowSums(squirrel_data_cor[,c("Tail.twitches","Approaches")]) + abs(squirrel_data$Runs.from - 1)
+```
+
